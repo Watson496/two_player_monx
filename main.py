@@ -1,3 +1,4 @@
+from fractions import Fraction
 from score import Score
 import json
 import csv
@@ -34,6 +35,9 @@ def generate_score_patterns(max_m: int, max_n: int) -> list[Score]:
 
 
 def main():
+    """
+    7○3×の試合に現れる各試合状況におけるhat_p, W_1, W_2の計算
+    """
     patterns = generate_score_patterns(7, 3)
     res = [score.summary() for pattern in patterns for score in pattern]
     print(json.dumps(res, indent=2))
@@ -46,6 +50,31 @@ def main():
         for row in res:
             writer.writerow(row)
 
+def main2():
+    """
+    50○50×までの各試合状況において、hat_pが予想を満たすことを検証
+    """
+    patterns = generate_score_patterns(50, 50)
+    res = [score.summary() for pattern in patterns for score in pattern]
+
+    # 予想の検証
+    for r in res:
+        e = Fraction(
+            r["m_1"] + r["m_2"] - 1,
+            r["m_1"] + r["n_1"] + r["m_2"] + r["n_2"] - 2
+        )
+        if not r["hat_p"] == str(e):
+            print(r)
+            print(f'e = {e} != {r["hat_p"]} = hat_p')
+
+    with open("res2.csv", "w", newline="", encoding="utf-8") as csvfile:
+        writer = csv.DictWriter(
+            csvfile, fieldnames=["S", "m_1", "n_1", "m_2", "n_2", "hat_p", "W_1", "W_2"]
+        )
+        writer.writeheader()
+        for row in res:
+            writer.writerow(row)    
 
 if __name__ == "__main__":
     main()
+    # main2()
